@@ -12,8 +12,6 @@ from PyQt5 import Qt
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-import winreg
-
 isWindows = False
 isLinux = False
 isMac = False

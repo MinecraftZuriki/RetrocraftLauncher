@@ -10,7 +10,6 @@ from PyQt5 import Qt
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-
 isWindows = False
 isLinux = False
 isMac = False
