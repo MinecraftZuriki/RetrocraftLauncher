@@ -350,7 +350,7 @@ def install(self):
             window.logMessage("Mac support is not yet available, aborting...", 1)
             #raise NotImplemented()
             return
-        else:
+        elif(isLinux):
             try:
                 #Nix protocol Handler
                 window.logMessage("Installing protocol handler...")
@@ -379,6 +379,9 @@ def install(self):
                 window.logMessage("Unable to create protocol handler desktop entry.", 1)
                 return
             #end try
+        else:
+            raise NotImplemented()
+            return
         #endif
 
         try:
