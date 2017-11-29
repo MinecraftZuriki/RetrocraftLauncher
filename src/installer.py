@@ -2,13 +2,17 @@
 
 import sys
 import os
+import shutil
 import platform
 import time
 import distutils
+import subprocess
 #import PyQt5
 from PyQt5 import Qt
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+
+import winreg
 
 isWindows = False
 isLinux = False
@@ -275,6 +279,8 @@ def install(self):
             overwrite = False
         #end if
     if(overwrite):
+        # Pre-Install checks
+
         if(os.path.abspath(window.tbInstallPath.text()) != window.tbInstallPath.text()):
             window.logMessage("Path in unexpected format, aborting installation!", 1)
             errorDialog("Path in unexpected format, aborting installation!")
@@ -314,8 +320,108 @@ def install(self):
         #end if
         Config.multiMcPath(window.tbMultiMCPath.text())
 
-        window.logMessage("Writing config...")
-        Config.save()
+        try:
+            # Save configuration file
+            window.logMessage("Writing config...")
+            Config.save()
+        except:
+            errorDialog("Unable to write config!\n\nAborting installation.")
+            window.logMessage("Unable to write config, aborting installation!", 1)
+            return
+        #end try
+
+        # Install Protocol Handler
+        if(isWindows):
+            try:
+                window.logMessage("Creating protocol handler registry keys...")
+                regMainKey = winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, "Software\\Classes\\retrocraft", 0, winreg.KEY_ALL_ACCESS)
+                regDefaultIconKey = winreg.CreateKeyEx(regMainKey, "DefaultIcon", 0, winreg.KEY_ALL_ACCESS)
+                regShellKey = winreg.CreateKeyEx(regMainKey, "shell\open\command", 0, winreg.KEY_ALL_ACCESS)
+
+                winreg.SetValueEx(regMainKey, None, 0, winreg.REG_SZ, "Retrocraft Launcher Protocol")
+                winreg.SetValueEx(regMainKey, "URL Protocol", 0, winreg.REG_SZ, "")
+                winreg.SetValueEx(regDefaultIconKey, None, 0, winreg.REG_SZ, os.path.join(window.tbInstallPath.text(), "RetrocraftLauncher.exe"))
+                winreg.SetValueEx(regShellKey, None, 0, winreg.REG_SZ, os.path.join(window.tbInstallPath.text(), "RetrocraftLauncher.exe"))
+            except WindowsError:
+                errorDialog("Unable to create registry keys,\napplication or user may have insufficient privilleges!\n\nAborting installation!")
+                window.logMessage("Unable to create registry keys!", 1)
+                return
+        elif(isMac):
+            window.logMessage("Mac support is not yet available, aborting...", 1)
+            #raise NotImplemented()
+            return
+        else:
+            try:
+                #Nix protocol Handler
+                window.logMessage("Installing protocol handler...")
+                appSharePath = os.path.join(os.path.expanduser("~"), ".local", "share", "applications")
+                if(os.path.exists(appSharePath)):
+                    os.makedirs(appSharePath, exist_ok=True)
+                f = open(os.path.join(appSharePath, "retrocraft.desktop"), "w+")
+                lines = ["[Desktop Entry]", "Name=Retrocraft Launcher Protocol", "GenericName=Retrocraft Launcher Protocol", "Comment=Fast way to generate mptickets from URIs", "Exec="+Config.installPath()+"/retrocraftlauncher \"%u\"", "Terminal=false", "Type=Application", "MimeType=x-scheme-handler/retrocraft;", "Categories=Application;"]
+                f.write("\n".join(lines))
+                f.flush()
+                f.close()
+
+                window.logMessage("Refreshing handler database...")
+                if(subprocess.call(['bash', '-c', 'update-desktop-database ~/.local/share/applications']) != 0):
+                    errorDialog("Failed to update desktop database.")
+                    window.logMessage("Failed to update desktop database.", 1)
+                window.logMessage("Applying MIME settings...")
+                if(subprocess.call(['bash', '-c', 'xdg-mime default retrocraft.desktop x-scheme-handler/foo;']) != 0):
+                    errorDialog("Failed to register mime type.")
+                    window.logMessage("Failed to register mime type.", 1)
+
+                window.logMessage("This process hasn't been thoroughly tested, it may or may not work. Best way to test is using 'xdg-open retrocraft://...', if this opens the launcher then the desktop settings applied successfully. However your web-browser may require special configuration.")
+                #infoDialog("This process hasn't been thoroughly tested, it may or may not work.\n\nBest way to test is using 'xdg-open retrocraft://...', if this opens the launcher\nthen the desktop settings applied successfully.\n\nHowever your web-browser may require special configuration.")
+            except:
+                errorDialog("Unable to create protocol handler desktop entry.")
+                window.logMessage("Unable to create protocol handler desktop entry.", 1)
+                return
+            #end try
+        #endif
+
+        try:
+            bundlePath = None
+            if(hasattr(sys, "_MEIPASS")):
+                bundlePath = os.path.abspath(sys._MEIPASS) # Preferred
+            elif(os.environ.get("_MEIPASS")!=None):
+                bundlePath = os.path.abspath(os.environ.get("_MEIPASS")) # Not sure if this is ever used
+            elif(os.environ.get("_MEIPASS2")!=None):
+                bundlePath = os.path.abspath(os.environ.get("_MEIPASS2")) # Older version of pyinstaller may use this?
+            else:
+                errorDialog("Unable to allocate temporary working directory.\n\nInstallation aborted!")
+                window.logMessage("Unable to allocate temporary working directory!", 1)
+                return
+            #end try
+
+            window.logMessage("Preparing install...")
+            os.makedirs(Config.installPath(), exist_ok=True)
+
+            exe = None
+            if(isWindows):
+                exe = "RetrocraftLauncher.exe"
+            elif(isMac):
+                exe = "RetrocraftLauncher.app"
+            else:
+                exe = "RetrocraftLauncher"
+            #end if
+
+            window.logMessage("Copying data files...")
+            shutil.copyfile(os.path.abspath(os.path.join(bundlePath, exe)), os.path.abspath(os.path.join(Config.installPath(), exe)))
+        except OSError:
+            errorDialog("Unable to install executable in selected install path.\nApplication or user may have insufficient privilleges.\n\nInstallation aborted.")
+            window.logMessage("Unable to install executable in selected install path.", 1)
+            return
+        except:
+            errorDialog("Unspecified error occurred when copying data.\n\nInstallation aborted.")
+            window.logMessage("Unspecified error occurred when copying data.", 1)
+            return
+        #end try
+
+        infoDialog("Installation completed!")
+        window.logMessage("Installation completed!")
+        return
     else:
         infoDialog("Installation aborted!")
     #end if
