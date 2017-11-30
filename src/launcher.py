@@ -231,7 +231,7 @@ def infoDialog(message):
 #end def
 
 if(len(sys.argv)>1):
-    print(sys.argv[1])
+    app = QtWidgets.QApplication([sys.argv[0]])
 else:
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
@@ -243,19 +243,19 @@ protocolString = protocolString.partition("retrocraft://")[2]
 parameters = None
 
 if(protocolString==""):
-    print("Unexpected protocol format, malformed or wrong version")
+    errorDialog("Unexpected protocol format, malformed or wrong version")
     sys.exit()
 else:
     parameters = protocolString.split("/")
     if(len(parameters)!=4):
-        print("Wrong number of parameters in protocol data, malformed or wrong version")
+        errorDialog("Wrong number of parameters in protocol data, malformed or wrong version")
         sys.exit()
     #end if
 
     mpticketFile = None
     instancePath = os.path.abspath(os.path.join(Config.multiMcPath(), "instances", parameters[2]))
     if(os.path.exists(instancePath)==False):
-        print("You do not have this version of Minecraft installed")
+        infoDialog("You do not have this version of Minecraft installed: " + parameters[2])
         sys.exit()
     else:
         launchMinecraft(parameters[0], parameters[1], parameters[2], parameters[3])
