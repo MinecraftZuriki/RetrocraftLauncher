@@ -353,20 +353,19 @@ def install(self):
                 #Nix protocol Handler
                 window.logMessage("Installing protocol handler...")
                 appSharePath = os.path.join(os.path.expanduser("~"), ".local", "share", "applications")
-                if(os.path.exists(appSharePath)):
-                    os.makedirs(appSharePath, exist_ok=True)
+                os.makedirs(appSharePath, exist_ok=True)
                 f = open(os.path.join(appSharePath, "retrocraft.desktop"), "w+")
-                lines = ["[Desktop Entry]", "Name=Retrocraft Launcher Protocol", "GenericName=Retrocraft Launcher Protocol", "Comment=Fast way to generate mptickets from URIs", "Exec="+Config.installPath()+"/retrocraftlauncher \"%u\"", "Terminal=false", "Type=Application", "MimeType=x-scheme-handler/retrocraft;", "Categories=Application;"]
+                lines = ["[Desktop Entry]", "Name=Retrocraft Launcher Protocol", "GenericName=Retrocraft Launcher Protocol", "Comment=Fast way to generate mptickets from URIs", "Exec="+Config.installPath()+"/RetrocraftLauncher \"%u\"", "Terminal=false", "Type=Application", "MimeType=x-scheme-handler/retrocraft;", "Categories=Application;"]
                 f.write("\n".join(lines))
                 f.flush()
                 f.close()
 
                 window.logMessage("Refreshing handler database...")
-                if(subprocess.call(['bash', '-c', 'update-desktop-database ~/.local/share/applications']) != 0):
+                if(subprocess.call(['update-desktop-database ~/.local/share/applications']) != 0):
                     errorDialog("Failed to update desktop database.")
                     window.logMessage("Failed to update desktop database.", 1)
                 window.logMessage("Applying MIME settings...")
-                if(subprocess.call(['bash', '-c', 'xdg-mime default retrocraft.desktop x-scheme-handler/retrocraft;']) != 0):
+                if(subprocess.call(['xdg-mime default retrocraft.desktop x-scheme-handler/retrocraft;']) != 0):
                     errorDialog("Failed to register mime type.")
                     window.logMessage("Failed to register mime type.", 1)
 
