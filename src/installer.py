@@ -366,7 +366,7 @@ def install(self):
                     errorDialog("Failed to update desktop database.")
                     window.logMessage("Failed to update desktop database.", 1)
                 window.logMessage("Applying MIME settings...")
-                if(subprocess.call(['bash', '-c', 'xdg-mime default retrocraft.desktop x-scheme-handler/foo;']) != 0):
+                if(subprocess.call(['bash', '-c', 'xdg-mime default retrocraft.desktop x-scheme-handler/retrocraft;']) != 0):
                     errorDialog("Failed to register mime type.")
                     window.logMessage("Failed to register mime type.", 1)
 
