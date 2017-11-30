@@ -339,7 +339,7 @@ def install(self):
                 winreg.SetValueEx(regMainKey, None, 0, winreg.REG_SZ, "Retrocraft Launcher Protocol")
                 winreg.SetValueEx(regMainKey, "URL Protocol", 0, winreg.REG_SZ, "")
                 winreg.SetValueEx(regDefaultIconKey, None, 0, winreg.REG_SZ, os.path.join(window.tbInstallPath.text(), "RetrocraftLauncher.exe"))
-                winreg.SetValueEx(regShellKey, None, 0, winreg.REG_SZ, os.path.join(window.tbInstallPath.text(), "RetrocraftLauncher.exe"))
+                winreg.SetValueEx(regShellKey, None, 0, winreg.REG_SZ, "\"" + os.path.join(window.tbInstallPath.text(), "RetrocraftLauncher.exe") + "\" \"%1\"")
             except WindowsError:
                 errorDialog("Unable to create registry keys,\napplication or user may have insufficient privilleges!\n\nAborting installation!")
                 window.logMessage("Unable to create registry keys!", 1)
