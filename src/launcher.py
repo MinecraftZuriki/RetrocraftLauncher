@@ -219,8 +219,8 @@ def launchMinecraft(ipaddr, port, version, mppass):
         sys.exit()
     except FileNotFoundError:
         errorDialog("Unable to find configuration file,\n\nprogram may not have been installed properly.")
-    except:
-        errorDialog("Encountered unspecified error.")
+    except Exception as ex:
+        errorDialog("Encountered error:\n\n" + ex)
     #end try
 #end def
 
