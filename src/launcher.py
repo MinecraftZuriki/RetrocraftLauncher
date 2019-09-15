@@ -215,7 +215,8 @@ def launchMinecraft(ipaddr, port, version, mppass):
             exe = "MultiMC"
         #end if
 
-        subprocess.run(os.path.abspath(os.path.join(Config.multiMcPath(), exe)) + " -l \"" + version + "\"", shell=False, check=False)
+        # subprocess.run(os.path.abspath(os.path.join(Config.multiMcPath(), exe)) + " -l \"" + version + "\"", shell=False, check=False)
+        subprocess.run([os.path.abspath(os.path.join(Config.multiMcPath(), exe)), "-l", version], shell=False, check=False)
         sys.exit()
     except FileNotFoundError:
         errorDialog("Unable to find configuration file,\n\nprogram may not have been installed properly.")
